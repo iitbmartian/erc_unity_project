@@ -6,14 +6,14 @@ Simulating the **Husarion Panther rover** in the **ERC Mars Yard** using **Unity
 
 
 
-## 📋 Prerequisites
+## Prerequisites
 
 - **Operating System:** Ubuntu (with ROS2 installed, any distro)
 - **Hardware:** A high-core-count CPU and a dedicated NVIDIA GPU is recommended
 
 
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Clone This Repository
 
@@ -65,33 +65,33 @@ In Unity:
 - Start the simulation
 
 > [!TIP]
-> If the `Robotics` tab is missing or packages are not found, refer to the [Unity Packages](#-unity-packages) section to download the required packages.
+> If the `Robotics` tab is missing or packages are not found, refer to the [Unity Packages](#unity-packages) section to download the required packages.
 
 
 
-## 🧭 Sensor Integration
+## Sensor Integration
 
 This simulation includes multiple sensors with data published via ROS2 topics.
 
-### 🧠 IMU Sensor
+### IMU Sensor
 - **Source:** UnitySensors package
 - **Data Published:**
   - `/imu/data`
 
-### 📷 ZED-X RGB Camera
+### ZED-X Camera
 - **Data Published:**
   - `/zedx/left/image_raw` – RGB image feed
   - `/zedx/left/depth_raw` – depth image
   - `/zedx/points` – point cloud
 
-### 📍 Odometry
+### Odometry
 - **Data Published:** `/odom`
 - **Behavior:** Uses Unity’s absolute position and rotation to publish accurate odometry with **zero drift**
 - **Toggle:** Can be disabled from the `Panther` GameObject’s Inspector
 
 
 
-## 🎮 Controls
+## Controls
 
 - Use **WASD** keys to drive the rover using Unity
 - Also subscribes to `/cmd_vel`, so you can use Teleop keyboard or any other interface that publishes to `/cmd_vel`
@@ -105,7 +105,7 @@ You can modify this script to customize the robot's control logic.
 
 
 
-## 📡 Visualizing in RViz2
+## Visualizing in RViz2
 
 Once the simulation is running and data is publishing, you should be able to visualize the following in RVIZ2:
 - `/odom`
@@ -118,13 +118,13 @@ Once the simulation is running and data is publishing, you should be able to vis
 
 
 
-## 📦 Unity Packages
+## Unity Packages
 
 - 🔌 [ROS-TCP-Connector](https://github.com/Unity-Technologies/ROS-TCP-Connector) – for ROS2 communication
 - 🎯 [UnitySensors](https://github.com/Field-Robotics-Japan/UnitySensors/tree/master) – for IMU and other cool sensors that you can directly integrate if you want
 
 
-## 🛠 Troubleshooting
+## Troubleshooting
 
 - **No data in RViz2:** Check if ROS TCP Endpoint is running on correct IP/port, and correct topic is selected. For more help refer to [ROS Unity Integration](https://github.com/Unity-Technologies/Unity-Robotics-Hub/tree/main/tutorials/ros_unity_integration).
 - **Simulation lagging:** Try reducing the frame rate and publishing frequency to ros2
