@@ -93,8 +93,8 @@ This simulation includes multiple sensors with data published via ROS2 topics.
 
 ## 🎮 Controls
 
-- **WASD** keys to drive the rover
-- Also subscribes to ROS2 topic: `/cmd_vel`
+- Use **WASD** keys to drive the rover using Unity
+- Also subscribes to `/cmd_vel`, so you can use Teleop keyboard or any other interface that publishes to `/cmd_vel`
 
 Movement logic is located in:
 ```
@@ -126,5 +126,5 @@ Once the simulation is running and data is publishing, you should be able to vis
 
 ## 🛠 Troubleshooting
 
-- **No data in RViz2:** Check if ROS TCP Endpoint is running on correct IP/port, and correct topic is selected
+- **No data in RViz2:** Check if ROS TCP Endpoint is running on correct IP/port, and correct topic is selected. For more help refer to [ROS Unity Integration](https://github.com/Unity-Technologies/Unity-Robotics-Hub/tree/main/tutorials/ros_unity_integration).
 - **Simulation lagging:** Try reducing the frame rate and publishing frequency to ros2
