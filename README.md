@@ -120,8 +120,8 @@ Once the simulation is running and data is publishing, you should be able to vis
 
 ## Unity Packages
 
-- 🔌 [ROS-TCP-Connector](https://github.com/Unity-Technologies/ROS-TCP-Connector) – for ROS2 communication
-- 🎯 [UnitySensors](https://github.com/Field-Robotics-Japan/UnitySensors/tree/master) – for IMU and other cool sensors that you can directly integrate if you want
+- [ROS-TCP-Connector](https://github.com/Unity-Technologies/ROS-TCP-Connector) – for ROS2 communication
+- [UnitySensors](https://github.com/Field-Robotics-Japan/UnitySensors/tree/master) – for IMU and other cool sensors that you can directly integrate if you want
 
 
 ## Troubleshooting
