@@ -15,7 +15,13 @@ Simulating the **Husarion Panther rover** in the **ERC Mars Yard** using **Unity
 
 ## 🚀 Getting Started
 
-### 1. Install Unity Hub and Unity Editor
+### 1. Clone This Repository
+
+```bash
+git clone https://github.com/iitbmartian/erc_unity_project.git
+cd erc_unity_project
+```
+### 2. Install Unity Hub and Unity Editor
 
 Download and Install [Unity Hub](https://unity.com/download). Once Unity Hub is installed it should ask you for login and licenses. Register for [Unity's student plan](https://unity.com/products/unity-student) and get your free student license. It will then guide you through with activating that license in the Unity Hub.
 
@@ -24,12 +30,6 @@ Once installed:
 - Select the cloned `erc_unity_project` folder
 - Unity will prompt you to install the required editor version
 
-### 2. Clone This Repository
-
-```bash
-git clone https://github.com/iitbmartian/erc_unity_project.git
-cd erc_unity_project
-```
 
 ### 3. Set Up ROS2 TCP Communication
 
