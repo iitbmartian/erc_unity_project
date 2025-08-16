@@ -108,7 +108,7 @@ public class CarControl : MonoBehaviour
     {
         carRigidbody = GetComponent<Rigidbody>();
         ros = ROSConnection.GetOrCreateInstance();
-        ros.Subscribe<TwistMsg>("/cmd_vel_nav2", CmdVelCallback);
+        ros.Subscribe<TwistMsg>("/panther/cmd_vel", CmdVelCallback);
         
         linearPID = new PIDController(linearKp, linearKi, linearKd);
         angularPID = new PIDController(angularKp, angularKi, angularKd);
