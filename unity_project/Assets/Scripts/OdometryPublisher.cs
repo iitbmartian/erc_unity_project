@@ -15,7 +15,7 @@ public class OdometryPublisher : MonoBehaviour
     public string tfTopic = "/tf";
     public string frameId = "panther/odom";
     public string childFrameId = "panther/base_link";
-    public float publishRate = 50f;
+    public float publishRate = 100f;
 
     private ROSConnection ros;
     private Rigidbody rb;

@@ -365,7 +365,6 @@ GameObject:
   - component: {fileID: 1209920565818508071}
   - component: {fileID: 6381720581516869522}
   - component: {fileID: 6453698027486072903}
-  - component: {fileID: 8381657035880100253}
   m_Layer: 0
   m_Name: ZEDX
   m_TagString: Untagged
@@ -443,30 +442,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &8381657035880100253
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4107165058575724686}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 967d7977bf3644d00bc1a76530ecd1e7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  leftCamera: {fileID: 493634116228468803}
-  width: 1280
-  height: 720
-  vFov: 70
-  depthMin: 0.2
-  depthMax: 50
-  fps: 30
-  rgbLeftTopic: /zedx/left/image_raw
-  depthLeftTopic: /zedx/left/depth_raw
-  cameraInfoLeftTopic: /zedx/left/camera_info
-  pointCloudTopic: /zedx/points
-  opticalFrameId: left_camera_link_optical
 --- !u!1 &6062053189227495402
 GameObject:
   m_ObjectHideFlags: 0
