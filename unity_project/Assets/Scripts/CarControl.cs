@@ -108,7 +108,7 @@ public class CarControl : MonoBehaviour
     {
         carRigidbody = GetComponent<Rigidbody>();
         ros = ROSConnection.GetOrCreateInstance();
-        ros.Subscribe<TwistMsg>("/cmd_vel", CmdVelCallback);
+        ros.Subscribe<TwistMsg>("/cmd_vel_nav2", CmdVelCallback);
         
         linearPID = new PIDController(linearKp, linearKi, linearKd);
         angularPID = new PIDController(angularKp, angularKi, angularKd);
@@ -116,8 +116,8 @@ public class CarControl : MonoBehaviour
 
     private void CmdVelCallback(TwistMsg msg)
     {
-        cmdVelLinear = (float)msg.linear.x;
-        cmdVelAngular = (float)msg.angular.z;
+        cmdVelLinear = 2*(float)msg.linear.x;
+        cmdVelAngular = 2*(float)msg.angular.z;
         useCmdVel = true;
         lastCmdVelTime = Time.time; 
     }

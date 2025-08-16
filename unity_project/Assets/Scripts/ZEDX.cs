@@ -15,10 +15,12 @@ using System.Threading.Tasks;
 
 public class ZEDX : MonoBehaviour
 {
-    [Header("Stereo Rig")]
     public Camera leftCamera;
 
-    [Header("Image Settings")]
+    public bool enableImageCapture = true;
+    public bool enableDepthCapture = false;
+    public bool enablePointCloud = false;
+
     public int width = 1280;
     public int height = 720;
     public float vFov = 70f;
@@ -26,12 +28,12 @@ public class ZEDX : MonoBehaviour
     public float depthMax = 50f;
     public int fps = 15;
 
-    [Header("ROS Topics")]
     public string rgbLeftTopic        = "/zedx/left/image_raw";
     public string depthLeftTopic      = "/zedx/left/depth_raw";
     public string cameraInfoLeftTopic = "/zedx/left/camera_info";
     public string pointCloudTopic     = "/zedx/points";
-    public string opticalFrameId             = "camera_link_optical";  // Use optical frame
+    public string opticalFrameId             = "camera_link_optical";
+    
     // internals
     ROSConnection ros;
     RenderTexture  lColorRT, lDepthRT;
@@ -51,7 +53,6 @@ public class ZEDX : MonoBehaviour
 
     void Start()
     {
-
         interval = 1f / fps;
         SetupROS();
         SetupCameras();
@@ -64,10 +65,22 @@ public class ZEDX : MonoBehaviour
     void SetupROS()
     {
         ros = ROSConnection.GetOrCreateInstance();
-        ros.RegisterPublisher<ImageMsg>(rgbLeftTopic);
-        ros.RegisterPublisher<ImageMsg>(depthLeftTopic);
-        ros.RegisterPublisher<CameraInfoMsg>(cameraInfoLeftTopic);
-        ros.RegisterPublisher<PointCloud2Msg>(pointCloudTopic);
+        
+        if (enableImageCapture)
+        {
+            ros.RegisterPublisher<ImageMsg>(rgbLeftTopic);
+            ros.RegisterPublisher<CameraInfoMsg>(cameraInfoLeftTopic);
+        }
+        
+        if (enableDepthCapture)
+        {
+            ros.RegisterPublisher<ImageMsg>(depthLeftTopic);
+        }
+        
+        if (enablePointCloud)
+        {
+            ros.RegisterPublisher<PointCloud2Msg>(pointCloudTopic);
+        }
     }
 
     void SetupCameras()
@@ -76,28 +89,52 @@ public class ZEDX : MonoBehaviour
         leftCamera.fieldOfView   = vFov;
         leftCamera.nearClipPlane = depthMin;
         leftCamera.farClipPlane  = depthMax;
-        leftCamera.depthTextureMode = DepthTextureMode.Depth;
+        
+        if (enableDepthCapture || enablePointCloud)
+            leftCamera.depthTextureMode = DepthTextureMode.Depth;
         
         // Prevent automatic rendering but keep camera component active for manual rendering
         leftCamera.enabled = false;
 
-        lColorRT = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
-        lDepthRT = new RenderTexture(width, height, 0, RenderTextureFormat.RFloat) { enableRandomWrite = true };
-        lColorRT.Create();  lDepthRT.Create();
+        if (enableImageCapture)
+        {
+            lColorRT = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
+            lColorRT.Create();
+        }
 
-        depthMat = new Material(Shader.Find("Custom/DepthTextureShader"));
-        depthMat.SetFloat("_DepthMin", depthMin);
-        depthMat.SetFloat("_DepthMax", depthMax);
+        if (enableDepthCapture || enablePointCloud)
+        {
+            lDepthRT = new RenderTexture(width, height, 0, RenderTextureFormat.RFloat) { enableRandomWrite = true };
+            lDepthRT.Create();
+
+            depthMat = new Material(Shader.Find("Custom/DepthTextureShader"));
+            depthMat.SetFloat("_DepthMin", depthMin);
+            depthMat.SetFloat("_DepthMax", depthMax);
+        }
     }
 
     void SetupBuffers()
     {
-        lColorBuf = new NativeArray<byte>(width * height * 4, Allocator.Persistent);
-        lDepthBuf = new NativeArray<float>(width * height, Allocator.Persistent);
+        if (enableImageCapture)
+        {
+            lColorBuf = new NativeArray<byte>(width * height * 4, Allocator.Persistent);
+            rgbBuffer = new byte[width * height * 3];
+        }
 
-        rgbBuffer   = new byte[width * height * 3];
-        depthBuffer = new byte[width * height * 2];
-        pcBuffer = new byte[width * height * 16];
+        if (enableDepthCapture || enablePointCloud)
+        {
+            lDepthBuf = new NativeArray<float>(width * height, Allocator.Persistent);
+        }
+
+        if (enableDepthCapture)
+        {
+            depthBuffer = new byte[width * height * 2];
+        }
+
+        if (enablePointCloud)
+        {
+            pcBuffer = new byte[width * height * 16];
+        }
     }
 
     void SetupIntrinsics()
@@ -108,20 +145,23 @@ public class ZEDX : MonoBehaviour
         float cx     = (width  - 1) / 2f;
         float cy     = (height - 1) / 2f;
 
-        camInfoL = new CameraInfoMsg
+        if (enableImageCapture)
         {
-            header = new HeaderMsg { frame_id = opticalFrameId },
-            height = (uint)height,
-            width  = (uint)width,
-            distortion_model = "plumb_bob",
-            k = new double[]{ fx,0,cx, 0,fy,cy, 0,0,1 },
-            d = new double[5],
-            r = new double[]{1,0,0, 0,1,0, 0,0,1},
-            p = new double[]{ fx,0,cx, 0,0,fy,cy, 0,0,0,1,0 },
-            binning_x = 0,
-            binning_y = 0,
-            roi = new RegionOfInterestMsg()
-        };
+            camInfoL = new CameraInfoMsg
+            {
+                header = new HeaderMsg { frame_id = opticalFrameId },
+                height = (uint)height,
+                width  = (uint)width,
+                distortion_model = "plumb_bob",
+                k = new double[]{ fx,0,cx, 0,fy,cy, 0,0,1 },
+                d = new double[5],
+                r = new double[]{1,0,0, 0,1,0, 0,0,1},
+                p = new double[]{ fx,0,cx, 0,0,fy,cy, 0,0,0,1,0 },
+                binning_x = 0,
+                binning_y = 0,
+                roi = new RegionOfInterestMsg()
+            };
+        }
 
         fxConst = fx;
     }
@@ -137,7 +177,7 @@ public class ZEDX : MonoBehaviour
                 if (Time.time - lastTime < interval) continue;
                 lastTime = Time.time;
 
-                await RenderAndRead(leftCamera, lColorRT, lDepthRT, lColorBuf, lDepthBuf, token);
+                await RenderAndRead(leftCamera, token);
                 PublishFrame();
             }
         }
@@ -155,42 +195,44 @@ public class ZEDX : MonoBehaviour
         }
     }
 
-    async Task RenderAndRead(
-        Camera cam,
-        RenderTexture cRT, RenderTexture dRT,
-        NativeArray<byte>  cBuf,
-        NativeArray<float> dBuf,
-        CancellationToken  token)
+    async Task RenderAndRead(Camera cam, CancellationToken token)
     {
         // Temporarily enable the camera for rendering
         bool wasEnabled = cam.enabled;
         cam.enabled = true;
         
-        // Render color to color RT
-        cam.targetTexture = cRT;
-        cam.Render();
+        // Handle image capture
+        if (enableImageCapture)
+        {
+            cam.targetTexture = lColorRT;
+            cam.Render();
+            var creq = AsyncGPUReadback.RequestIntoNativeArray(ref lColorBuf, lColorRT, 0, TextureFormat.RGBA32);
+            while (!creq.done) await Awaitable.NextFrameAsync(token);
+        }
+
+        // Handle depth capture (only if needed)
+        if (enableDepthCapture || enablePointCloud)
+        {
+            // Now render depth by setting up a temporary depth buffer
+            RenderTexture tempDepthRT = RenderTexture.GetTemporary(width, height, 24, RenderTextureFormat.Depth);
+            
+            // Render again to get fresh depth data
+            cam.targetTexture = tempDepthRT;
+            cam.Render();
+            
+            // Now blit the depth using our shader, passing the specific depth texture
+            depthMat.SetTexture("_MainTex", tempDepthRT);
+            Graphics.Blit(tempDepthRT, lDepthRT, depthMat);
+            
+            // Clean up
+            RenderTexture.ReleaseTemporary(tempDepthRT);
+            
+            var dreq = AsyncGPUReadback.RequestIntoNativeArray(ref lDepthBuf, lDepthRT, 0, TextureFormat.RFloat);
+            while (!dreq.done) await Awaitable.NextFrameAsync(token);
+        }
         
-        // Now render depth by setting up a temporary depth buffer
-        // and using the color RT's depth buffer directly
-        RenderTexture tempDepthRT = RenderTexture.GetTemporary(width, height, 24, RenderTextureFormat.Depth);
-        
-        // Render again to get fresh depth data
-        cam.targetTexture = tempDepthRT;
-        cam.Render();
-        
-        // Now blit the depth using our shader, passing the specific depth texture
-        depthMat.SetTexture("_MainTex", tempDepthRT);
-        Graphics.Blit(tempDepthRT, dRT, depthMat);
-        
-        // Clean up
-        RenderTexture.ReleaseTemporary(tempDepthRT);
         cam.targetTexture = null;
         cam.enabled = wasEnabled;
-
-        var creq = AsyncGPUReadback.RequestIntoNativeArray(ref cBuf, cRT, 0, TextureFormat.RGBA32);
-        while (!creq.done) await Awaitable.NextFrameAsync(token);
-        var dreq = AsyncGPUReadback.RequestIntoNativeArray(ref dBuf, dRT, 0, TextureFormat.RFloat);
-        while (!dreq.done) await Awaitable.NextFrameAsync(token);
     }
 
     void PublishFrame()
@@ -201,17 +243,29 @@ public class ZEDX : MonoBehaviour
             nanosec= (uint)((Time.time - Mathf.Floor(Time.time)) * 1e9f)
         };
 
-        camInfoL.header.stamp = stamp;
+        // Publish image data
+        if (enableImageCapture)
+        {
+            camInfoL.header.stamp = stamp;
+            var rgbL = BuildImageMsg(lColorBuf, width, height, stamp, opticalFrameId, "rgb8", 3);
+            
+            ros.Publish(rgbLeftTopic, rgbL);
+            ros.Publish(cameraInfoLeftTopic, camInfoL);
+        }
 
-        var rgbL = BuildImageMsg(lColorBuf, width, height, stamp, opticalFrameId, "rgb8",  3);
-        var depL = BuildImageMsg(lDepthBuf, width, height, stamp, opticalFrameId, "16UC1", 2, true);
+        // Publish depth data
+        if (enableDepthCapture)
+        {
+            var depL = BuildImageMsg(lDepthBuf, width, height, stamp, opticalFrameId, "16UC1", 2, true);
+            ros.Publish(depthLeftTopic, depL);
+        }
 
-        ros.Publish(rgbLeftTopic,        rgbL);
-        ros.Publish(depthLeftTopic,      depL);
-        ros.Publish(cameraInfoLeftTopic, camInfoL);
-
-        var pc2 = BuildPointCloud2(lDepthBuf, lColorBuf, width, height, stamp);
-        ros.Publish(pointCloudTopic, pc2);
+        // Publish point cloud
+        if (enablePointCloud)
+        {
+            var pc2 = BuildPointCloud2(lDepthBuf, lColorBuf, width, height, stamp);
+            ros.Publish(pointCloudTopic, pc2);
+        }
     }
 
     ImageMsg BuildImageMsg<T>(
@@ -281,7 +335,7 @@ public class ZEDX : MonoBehaviour
         unsafe
         {
             float* dp  = (float*)dbuf.GetUnsafeReadOnlyPtr();
-            byte*  cpb = (byte*)cbuf.GetUnsafeReadOnlyPtr();
+            byte*  cpb = cbuf.IsCreated ? (byte*)cbuf.GetUnsafeReadOnlyPtr() : null;
             fixed (byte* outp = pcBuffer)
             {
                 byte* op = outp;
@@ -297,8 +351,12 @@ public class ZEDX : MonoBehaviour
                         float unityY = ((h - 1) * 0.5f - y) * z / fxConst;
                         float unityZ = z;
 
-                        uint r = cpb[src*4 +0], g = cpb[src*4+1], b = cpb[src*4+2];
-                        uint rgb = (r<<16)|(g<<8)|b;
+                        uint rgb = 0xFFFFFF; // Default white if no color data
+                        if (cpb != null && enableImageCapture)
+                        {
+                            uint r = cpb[src*4 +0], g = cpb[src*4+1], b = cpb[src*4+2];
+                            rgb = (r<<16)|(g<<8)|b;
+                        }
 
                         *(float*)(op +  0) = unityX;  // Keep Unity coordinates
                         *(float*)(op +  4) = unityY;
