@@ -2,13 +2,14 @@
 
 Simulating the **Husarion Panther rover** in the **ERC Mars Yard** using **Unity** and **ROS2**.
 
-![Simulation Screenshot](https://github.com/user-attachments/assets/17faad7e-5d28-4f1d-a5ba-f609a040bca5)
+![Simulation Screenshot](https://github.com/user-attachments/assets/4da08646-c4d3-4315-9422-7cc5cc0e8ae2)
+
 
 
 
 ## Prerequisites
 
-- **Operating System:** Ubuntu (with ROS2 installed, any distro)
+- **Operating System:** Ubuntu (with ROS2 installed, humble/jazzy)
 - **Hardware:** A high-core-count CPU and a dedicated NVIDIA GPU is recommended
 
 
@@ -33,18 +34,9 @@ Once installed:
 
 ### 3. Set Up ROS2 TCP Communication
 
-Create a ROS2 workspace (if you don't have one):
-
+Build the ros2 ws:
 ```bash
-mkdir -p ~/ros2_ws/src
-cd ~/ros2_ws/src
-```
-
-Clone the [ROS-TCP-Endpoint package](https://github.com/Unity-Technologies/ROS-TCP-Endpoint/tree/main-ros2):
-
-```bash
-git clone -b main-ros2 https://github.com/Unity-Technologies/ROS-TCP-Endpoint.git
-cd ..
+cd erc_ws
 colcon build
 source install/setup.bash
 ```
@@ -53,6 +45,12 @@ Launch the TCP server:
 
 ```bash
 ros2 run ros_tcp_endpoint default_server_endpoint --ros-args -p ROS_IP:=127.0.0.1 -p ROS_TCP_PORT:=10000
+```
+
+Launch the static TF publisher:
+
+```bash
+ros2 run unity_sim static_tf_publisher
 ```
 
 ### 4. Connect Unity to ROS2
@@ -76,16 +74,21 @@ This simulation includes multiple sensors with data published via ROS2 topics.
 ### IMU Sensor
 - **Source:** UnitySensors package
 - **Data Published:**
-  - `/imu/data`
+  - `/panther/imu/data` - IMU data
 
-### ZED-X Camera
+### LS LIDAR C16
 - **Data Published:**
-  - `/zedx/left/image_raw` – RGB image feed
-  - `/zedx/left/depth_raw` – depth image
-  - `/zedx/points` – point cloud
+  - `/panther/cx/lslidar_point_cloud` - Lidar point cloud
+ 
+### Cameras
+- **Data Published:**
+  - `/panther/camera_front/image_raw` - Front camera
+  - `/panther/camera_back/image_raw` - Back camera
+  - `/panther/camera_left/image_raw` - Left camera
+  - `/panther/camera_right/image_raw` - Right camera
 
 ### Odometry
-- **Data Published:** `/odom`
+- **Data Published:** `/panther/odometry/filtered`
 - **Behavior:** Uses Unity’s absolute position and rotation to publish accurate odometry with **zero drift**
 - **Toggle:** Can be disabled from the `Panther` GameObject’s Inspector
 
@@ -94,7 +97,8 @@ This simulation includes multiple sensors with data published via ROS2 topics.
 ## Controls
 
 - Use **WASD** keys to drive the rover using Unity
-- Also subscribes to `/cmd_vel`, so you can use Teleop keyboard or any other interface that publishes to `/cmd_vel`
+- Also subscribes to `/panther/cmd_vel`, so you can use Teleop keyboard or any other interface that publishes TwistStamped msg to `/panther/cmd_vel`
+- **PID Controller:** The rover movement is now controlled using a PID system, making driving via `/panther/cmd_vel` smooth and realistic
 
 Movement logic is located in:
 ```
@@ -108,14 +112,33 @@ You can modify this script to customize the robot's control logic.
 ## Visualizing in RViz2
 
 Once the simulation is running and data is publishing, you should be able to visualize the following in RVIZ2:
-- `/odom`
-- `/imu/data`
-- `/zedx/left/image_raw`
-- `/zedx/left/depth_raw`
-- `/zedx/points`
+- `/panther/odometry/filtered`
+- `/panther/cx/lslidar_point_cloud`
+- `/panther/camera_front/image_raw`
+- `/panther/camera_back/image_raw`
+- `/panther/camera_left/image_raw`
+- `/panther/camera_right/image_raw`
 
-![RViz2 Screenshot](https://github.com/user-attachments/assets/9129529f-b81d-4568-b10b-2a081ab09b8c)
+![RViz2 Screenshot](https://github.com/user-attachments/assets/f0a4b044-98ed-4ed6-8f9b-2d0b10701a9e)
 
+
+
+
+## Environment & Objects
+
+- The world contains **ArUco markers** placed throughout the Mars Yard for testing localization and perception
+- Additional interactive objects have been added:
+  - **Mallet**
+  - **Cone**
+  - **Screwdriver**
+- These are useful for developing and benchmarking the object detection and identification pipeline
+
+
+## Performance Notes
+
+- The simulation is highly **optimized** to run at a stable frame rate
+- All ROS2 topics are published **without frame drops**
+- The topic types and names are **exactly the same as the real Husarion Panther rover**, ensuring seamless integration with existing pipelines
 
 
 ## Unity Packages
