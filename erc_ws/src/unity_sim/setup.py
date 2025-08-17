@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'static_tf_publisher = robot_localization.static_tf_publisher:main',
+            'static_tf_publisher = unity_sim.static_tf_publisher:main',
         ],
     },
 )
