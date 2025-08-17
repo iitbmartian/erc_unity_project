@@ -31,6 +31,9 @@ Once installed:
 - Select the cloned `erc_unity_project` folder
 - Unity will prompt you to install the required editor version
 
+> [!TIP]
+> If you don't see the erc world loaded in unity, then go to `Assets/Scenes` and double click on `ERC WORLD`
+
 
 ### 3. Set Up ROS2 TCP Communication
 
